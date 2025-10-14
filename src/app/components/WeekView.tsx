@@ -117,12 +117,12 @@ export default function WeekView({ className = "" }: WeekViewProps) {
 
   return (
     <motion.div
-      className={`w-full max-w-7xl mx-auto p-8 ${className}`}
+      className={`w-full min-h-screen p-8 flex items-center justify-center ${className}`}
       initial={{ y: 50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 px-12 py-8">
+      <div className="w-full max-w-7xl">
         <div className="flex gap-8 justify-center items-end flex-wrap">
           {days.map((date, index) => {
             const dateString = formatDateForFolder(date);
