@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { supabase, Story } from "@/lib/supabase";
 import Link from "next/link";
 import SunlightBackground from "../components/SunlightBackground";
+import NavBar from "../components/NavBar";
 
 export default function StoryListPage() {
   const [stories, setStories] = useState<Story[]>([]);
@@ -62,8 +63,9 @@ export default function StoryListPage() {
 
   return (
     <div className="w-full h-full min-h-screen">
+      <NavBar />
       <SunlightBackground />
-      <div className="sunlit-content">
+      <div className="sunlit-content pt-16">
         <motion.div
           className="container mx-auto px-8 py-16"
           initial={{ y: 50, opacity: 0 }}

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { supabase, Story } from "@/lib/supabase";
 import { useParams, useRouter } from "next/navigation";
 import SunlightBackground from "../../components/SunlightBackground";
+import NavBar from "../../components/NavBar";
 
 export default function StoryDetailPage() {
   const params = useParams();
@@ -15,6 +16,7 @@ export default function StoryDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDark, setIsDark] = useState(false);
+  const [showCameraImage, setShowCameraImage] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -83,11 +85,16 @@ export default function StoryDetailPage() {
     }
   };
 
+  const handleImageClick = () => {
+    setShowCameraImage((prev) => !prev);
+  };
+
   if (loading) {
     return (
       <div className="w-full h-full min-h-screen">
+        <NavBar />
         <SunlightBackground />
-        <div className="sunlit-content flex items-center justify-center min-h-screen">
+        <div className="sunlit-content pt-16 flex items-center justify-center min-h-screen">
           <div className="text-xl text-gray-500">Loading story...</div>
         </div>
       </div>
@@ -97,8 +104,9 @@ export default function StoryDetailPage() {
   if (error || !story) {
     return (
       <div className="w-full h-full min-h-screen">
+        <NavBar />
         <SunlightBackground />
-        <div className="sunlit-content flex items-center justify-center min-h-screen">
+        <div className="sunlit-content pt-16 flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="text-xl text-red-500 mb-4">
               {error || "Story not found"}
@@ -117,10 +125,11 @@ export default function StoryDetailPage() {
 
   return (
     <div className="w-full h-full min-h-screen">
+      <NavBar />
       <SunlightBackground />
-      <div className="sunlit-content">
+      <div className="sunlit-content pt-16">
         <motion.div
-          className="container mx-auto px-8 py-8 max-w-5xl"
+          className="container mx-auto px-8 py-8 max-w-7xl"
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -157,62 +166,67 @@ export default function StoryDetailPage() {
             {story.title}
           </motion.h1>
 
-          {/* Comic Image Section - Main Focus */}
-          {story.comic_image && (
-            <motion.div
-              className="mb-8 relative group max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="aspect-[4/3] bg-white rounded-xl overflow-hidden shadow-lg relative">
-                {/* Comic Image */}
-                <img
-                  src={story.comic_image}
-                  alt={`${story.title} - Comic`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.style.backgroundColor = "#f0f0f0";
-                  }}
-                />
-
-                {/* Camera Image Overlay - Shown on Hover */}
+          {/* Image and Poem Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Image Section - Click to Toggle */}
+            {story.comic_image && (
+              <motion.div
+                className="relative cursor-pointer"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                onClick={handleImageClick}
+                title="Click to toggle between comic and original image"
+              >
+                <div className="bg-white rounded-xl overflow-hidden shadow-lg relative hover:shadow-xl transition-shadow">
+                  <img
+                    src={
+                      showCameraImage && story.camera_image
+                        ? story.camera_image
+                        : story.comic_image
+                    }
+                    alt={
+                      showCameraImage
+                        ? `${story.title} - Camera`
+                        : `${story.title} - Comic`
+                    }
+                    className="w-full h-auto object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.backgroundColor = "#f0f0f0";
+                    }}
+                  />
+                </div>
+                {/* Indicator text */}
                 {story.camera_image && (
-                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <img
-                      src={story.camera_image}
-                      alt={`${story.title} - Camera`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.backgroundColor = "#f0f0f0";
-                      }}
-                    />
+                  <div className="text-center mt-2 text-sm text-gray-500">
+                    {showCameraImage ? "Original Image" : "Comic Image"} (click
+                    to toggle)
                   </div>
                 )}
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
-          {/* Poem Section */}
-          {story.poem_text && (
-            <motion.div
-              className="text-center mb-4 cursor-pointer hover:opacity-80 transition-opacity"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              onClick={handlePoemClick}
-              title="Click to replay audio"
-            >
-              <div className="prose prose-lg max-w-none">
-                <p
-                  className="whitespace-pre-wrap text-gray-800 leading-relaxed text-xl lg:text-2xl xl:text-3xl"
-                  style={{ fontFamily: "'Times New Roman', Times, serif" }}
-                >
-                  {story.poem_text}
-                </p>
-              </div>
-            </motion.div>
-          )}
+            {/* Poem Section */}
+            {story.poem_text && (
+              <motion.div
+                className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                onClick={handlePoemClick}
+                title="Click to replay audio"
+              >
+                <div className="prose prose-lg max-w-none">
+                  <p
+                    className="whitespace-pre-wrap text-gray-800 leading-relaxed text-xl lg:text-2xl xl:text-3xl"
+                    style={{ fontFamily: "'Times New Roman', Times, serif" }}
+                  >
+                    {story.poem_text}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </div>
 
           {/* Hidden Audio Player */}
           {story.poem_audio && (
